@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="src/DllEntry.cpp" />
+    <ClCompile Include="src/NullHelper.cpp" />
+    <ClCompile Include="src/NullMesh.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src/AboutRollup.h" />
+    <ClInclude Include="src/NullHelper.h" />
+    <ClInclude Include="src/resource.h" />
+    <ClInclude Include="src/Utils.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src/NullHelper.def" />
+    <None Include="src/res/fooTOOLS_green.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="src/res/Color_Black.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="src/res/Color_Blue.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="src/res/Color_Cyan.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="src/res/Color_Green.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="src/res/Color_HelperBlue.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="src/res/Color_Magenta.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="src/res/Color_MutedBlue.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="src/res/Color_MutedCyan.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="src/res/Color_MutedGreen.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="src/res/Color_MutedMagenta.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="src/res/Color_MutedRed.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="src/res/Color_MutedYellow.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="src/res/Color_Red.bmp">
+      <Filter>res</Filter>
+    </None>
+    <None Include="src/res/Color_Yellow.bmp">
+      <Filter>res</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="src/NullHelper.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="res">
+      <UniqueIdentifier>{c2fc2fb7-de04-414f-97e5-b604c8dedb9d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

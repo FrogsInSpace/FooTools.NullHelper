@@ -98,7 +98,16 @@ class NullHelperObject: public HelperObject
 		int HitTest(TimeValue t, INode* inode, int type, int crossing, int flags, IPoint2 *p, ViewExp *vpt);
 		int Display(TimeValue t, INode* inode, ViewExp *vpt, int flags);
 		CreateMouseCallBack* GetCreateMouseCallBack();
-		TCHAR *GetObjectName() { return GetString(IDS_NULL_CLASSNAME); }
+
+#if MAX_RELEASE_R15
+#if MAX_RELEASE_R24
+		const TCHAR* GetObjectName(bool localized) const override { return GetString(IDS_NULL_CLASSNAME); }
+#else
+		const TCHAR* GetObjectName() { return GetString(IDS_NULL_CLASSNAME); }
+#endif
+#else
+		TCHAR* GetObjectName() { return GetString(IDS_NULL_CLASSNAME); }
+#endif
 
 		void BeginEditParams( IObjParam *ip, ULONG flags,Animatable *prev);
 		void EndEditParams( IObjParam *ip, ULONG flags,Animatable *next);
@@ -123,7 +132,13 @@ class NullHelperObject: public HelperObject
 		// Animatable methods
 		void DeleteThis() { delete this; }
 		Class_ID ClassID() { return NULLHELPER_CLASSID; }
+
+#if MAX_RELEASE_R24
+		void GetClassName(TSTR& s, bool localized) const override { s = GetString(IDS_NULL_CLASSNAME); }
+#else
 		void GetClassName(TSTR& s) { s = GetString(IDS_NULL_CLASSNAME); }
+#endif
+
 		int IsKeyable() { return 0;}
 
 		// Direct paramblock access
@@ -133,7 +148,12 @@ class NullHelperObject: public HelperObject
 
 		int NumSubs() { return 1; }
 		Animatable* SubAnim(int i);
+		
+#if MAX_RELEASE_R24
+		TSTR SubAnimName(int i, BOOL isLocalized);
+#else
 		TSTR SubAnimName(int i);
+#endif
 
 		// From ref
  		int NumRefs() { return 1; }
@@ -141,13 +161,19 @@ class NullHelperObject: public HelperObject
 		void SetReference(int i, RefTargetHandle rtarg);
 
 #if (MAX_RELEASE >= 9000)	//max 9
-		RefTargetHandle		Clone(RemapDir& remap = DefaultRemapDir());
+		RefTargetHandle		Clone(RemapDir& remap /*= DefaultRemapDir() */);
 #else						//max 8 and earlier
 		RefTargetHandle		Clone(RemapDir& remap = NoRemap());
 #endif
 
-		RefResult NotifyRefChanged( Interval changeInt, RefTargetHandle hTarget,
-		   PartID& partID, RefMessage message );
+#if MAX_RELEASE_R17
+		virtual RefResult NotifyRefChanged(const Interval& changeInt,
+			RefTargetHandle hTarget, PartID& partID,
+			RefMessage message, BOOL propagate);
+#else
+		RefResult NotifyRefChanged(Interval changeInt, RefTargetHandle hTarget,
+			PartID& partID, RefMessage message);
+#endif
 
 		void SetDrawColors(INode* inode);
 		void SetNodeWireColor(DWORD col);

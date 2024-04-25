@@ -24,6 +24,9 @@ class NullHelperClassDesc:public ClassDesc2 {
 	int 			IsPublic()					{ return TRUE; }
 	void *			Create( BOOL loading )		{ return new NullHelperObject; }
 	const TCHAR *	ClassName()					{ return GetString(IDS_NULL_CLASSNAME); }
+#if MAX_VERSION_MAJOR >= 24
+	const TCHAR* NonLocalizedClassName() { return ClassName(); }
+#endif
 	SClass_ID		SuperClassID()				{ return HELPER_CLASS_ID; }
 	Class_ID 		ClassID()					{ return NULLHELPER_CLASSID; }
 	const TCHAR* 	Category()					{ return GetString(IDS_CATEGORY);  }
@@ -236,6 +239,11 @@ CreateMouseCallBack* NullHelperObject::GetCreateMouseCallBack()
 	return(&NullHelperCreateCB);
 }
 
+
+#if MAX_VERSION_MAJOR >= 15
+#define end p_end
+#endif
+
 /*===========================================================================*\
  |	Paramblock2 Descriptor
 \*===========================================================================*/
@@ -408,7 +416,12 @@ Animatable* NullHelperObject::SubAnim(int i) {
 	}
 }
 
-TSTR NullHelperObject::SubAnimName(int i) {
+#if MAX_RELEASE_R24
+TSTR NullHelperObject::SubAnimName(int i, BOOL isLocalized)
+#else
+TSTR NullHelperObject::SubAnimName(int i)
+#endif
+{
 	switch (i) {
 		case 0: return GetString(IDS_NULL_HELPER_PARAMETERS);
 		default: return _T("");
@@ -428,9 +441,15 @@ void NullHelperObject::SetReference(int i, RefTargetHandle rtarg) {
 	}
 }
 
-RefResult NullHelperObject::NotifyRefChanged(
-		Interval changeInt, RefTargetHandle hTarget,
-		PartID& partID,  RefMessage message)
+#if MAX_RELEASE_R17
+RefResult NullHelperObject::NotifyRefChanged(const Interval& changeInt,
+	RefTargetHandle hTarget, PartID& partID,
+	RefMessage message, BOOL propagate)
+#else
+RefResult NullHelperObject::NotifyRefChanged(Interval changeInt,
+	RefTargetHandle hTarget, PartID& partID,
+	RefMessage message)
+#endif
 	{
 	switch (message) {
 		case REFMSG_CHANGE:
@@ -540,13 +559,15 @@ int NullHelperObject::HitTest(TimeValue t, INode *inode, int type, int crossing,
 		mesh.select( gw, NULL, &hitRegion, flags & HIT_ABORTONHIT, 0);
 	} else {
 		// Draw marker if the null shape is "none"
-		gw->marker(&Point3(0,0,0), DIAMOND_MRKR);
+		Point3 p0 = Point3(0, 0, 0);
+		gw->marker(&p0, DIAMOND_MRKR);
 	}
 
 	// Draw center point
 	if (pblock2->GetInt(nh_centerpoint))
 	{
-		gw->marker(&Point3(0,0,0), X_MRKR);//DOT_MRKR);
+		Point3 p0 = Point3(0, 0, 0);
+		gw->marker(&p0, X_MRKR);//DOT_MRKR);
 	}
 
 	gw->setRndLimits(rlimBackup);
@@ -746,12 +767,13 @@ int NullHelperObject::Display(TimeValue t, INode* inode, ViewExp *vpt, int flags
 
 			// Draw mesh
 			UpdateMesh(t, vpt);
-			Material mat; // unused, really.........................
+			Material mat = Material();// unused, really.........................
 			mesh.render(gw, &mat, NULL, COMP_ALL, 1);
 		}
 	} else {
 		gw->setColor(LINE_COLOR, wireColor);
 
+		Point3 p0 = Point3(0, 0, 0);
 		// Draw marker if the null shape is "none"
 		if (solid)
 		{
@@ -766,11 +788,11 @@ int NullHelperObject::Display(TimeValue t, INode* inode, ViewExp *vpt, int flags
 
 			float d = DotProd(nd,vd);
 			if (d >= -0.000001f)
-				gw->marker(&Point3(0,0,0), DOT_MRKR);
+				gw->marker(&p0, DOT_MRKR);
 			else
-				gw->marker(&Point3(0,0,0), SM_CIRCLE_MRKR);
+				gw->marker(&p0, SM_CIRCLE_MRKR);
 		} else {
-			gw->marker(&Point3(0,0,0), DOT_MRKR);
+			gw->marker(&p0, DOT_MRKR);
 		}
 	}
 
@@ -779,6 +801,7 @@ int NullHelperObject::Display(TimeValue t, INode* inode, ViewExp *vpt, int flags
 	{
 		gw->setColor(LINE_COLOR, wireColor);
 
+		Point3 p0 = Point3(0, 0, 0);
 		if (solid)
 		{
 			Point3 nd, vd;
@@ -792,17 +815,18 @@ int NullHelperObject::Display(TimeValue t, INode* inode, ViewExp *vpt, int flags
 
 			float d = DotProd(nd,vd);
 			if (d >= -0.000001f)
-				gw->marker(&Point3(0,0,0), DOT_MRKR);
+				gw->marker(&p0, DOT_MRKR);
 			else
-				gw->marker(&Point3(0,0,0), SM_CIRCLE_MRKR);
+				gw->marker(&p0, SM_CIRCLE_MRKR);
 		} else
-			gw->marker(&Point3(0,0,0), DOT_MRKR);
+			gw->marker(&p0, DOT_MRKR);
 	}
 
 	gw->setColor(TEXT_COLOR, labelColor);
 
 	IPoint3 op;
-	gw->hTransPoint(&(Point3 (0.0f,0.0f,0.0f)), &op);
+	Point3 p0 = Point3(0, 0, 0);
+	gw->hTransPoint(&p0, &op);
 	op.x += 3;
 
 	// Draw label text
@@ -810,7 +834,7 @@ int NullHelperObject::Display(TimeValue t, INode* inode, ViewExp *vpt, int flags
 	{
 		op.y -= 16;
 
-		TCHAR* labelText;
+		const TCHAR* labelText;
 		pblock2->GetValue(nh_label,t,labelText,FOREVER);
 		gw->hText(&op, labelText);
 
@@ -856,7 +880,11 @@ int NullHelperObject::Display(TimeValue t, INode* inode, ViewExp *vpt, int flags
 		INode* parent = inode->GetParentNode();
 		if (!parent->IsRootNode())
 		{
+#if MAX_RELEASE_R24
+			gw->setTransform(Matrix3());
+#else
 			gw->setTransform(Matrix3(TRUE));
+#endif
 
 			Point3 line[3];
 			line[0] = (inode->GetObjectTM(t)).GetRow(3);
@@ -898,7 +926,7 @@ void NullHelperObject::MaybeEnlargeViewportRect(GraphicsWindow *gw, Rect &rect)
 			rect.right = gw->getWinSizeX();
 			rect.bottom = gw->getWinSizeY();
 		} else {
-			TCHAR* labelText;
+			const TCHAR* labelText;
 			SIZE size;
 			pblock2->GetValue(nh_label,0,labelText,FOREVER);
 
